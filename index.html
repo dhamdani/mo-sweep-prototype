@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0D9488">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Mo-Sweep — Lapor Jentik DBD</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Splash Screen -->
+  <div class="splash">
+    <div class="splash-icon">🦟</div>
+    <div class="splash-title">Mo-Sweep</div>
+    <div class="splash-subtitle">Lapor Jentik • Cegah DBD</div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container"></div>
+
+  <!-- Confetti Container -->
+  <div class="confetti-container"></div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modal-overlay" onclick="App.closeModal()">
+    <div class="modal" id="modal" onclick="event.stopPropagation()"></div>
+  </div>
+
+  <!-- App Shell -->
+  <div class="app active">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-title">
+        <span>🦟</span> Mo-Sweep
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="App.showToast('🔔 Tidak ada notifikasi baru')" title="Notifikasi">
+          🔔
+          <span class="notif-badge"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="content">
+
+      <!-- HOME -->
+      <section class="view active" id="view-home"></section>
+
+      <!-- LAPOR -->
+      <section class="view" id="view-lapor"></section>
+
+      <!-- LEADERBOARD -->
+      <section class="view" id="view-leaderboard"></section>
+
+      <!-- PROFIL -->
+      <section class="view" id="view-profil"></section>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-view="home">
+        <span class="nav-icon">🏠</span>
+        Beranda
+      </button>
+      <button class="nav-item" data-view="lapor">
+        <span class="nav-icon">🦟</span>
+        Lapor
+      </button>
+      <button class="nav-item" data-view="leaderboard">
+        <span class="nav-icon">🏆</span>
+        Peringkat
+      </button>
+      <button class="nav-item" data-view="profil">
+        <span class="nav-icon">👤</span>
+        Profil
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
