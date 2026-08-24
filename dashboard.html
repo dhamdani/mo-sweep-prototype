@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0F172A">
+  <title>Mo-Sweep Dashboard — Dinas Kesehatan Kota Bandung</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="sidebar-brand-icon">🦟</span>
+      <div>
+        <div class="sidebar-brand-name">Mo-Sweep</div>
+        <div class="sidebar-brand-sub">Dinas Kesehatan</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-nav-item active" data-page="ringkasan" onclick="Dashboard.navigate('ringkasan')">
+        <span>📊</span> Ringkasan
+      </button>
+      <button class="sidebar-nav-item" data-page="laporan" onclick="Dashboard.navigate('laporan')">
+        <span>📋</span> Laporan
+      </button>
+      <button class="sidebar-nav-item" data-page="peta" onclick="Dashboard.navigate('peta')">
+        <span>🗺️</span> Peta Hotspot
+      </button>
+      <button class="sidebar-nav-item" data-page="kader" onclick="Dashboard.navigate('kader')">
+        <span>👥</span> Performa Kader
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-info">
+        <span class="sidebar-footer-badge">🟢</span>
+        <span>Prototype v1.0</span>
+      </div>
+      <a href="index.html" class="sidebar-link">← Kembali ke Aplikasi Kader</a>
+    </div>
+  </aside>
+
+  <!-- Mobile Header -->
+  <header class="mobile-header">
+    <button class="hamburger" onclick="Dashboard.toggleSidebar()">☰</button>
+    <div class="mobile-brand">🦟 Mo-Sweep Dashboard</div>
+  </header>
+
+  <!-- Overlay for mobile sidebar -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="Dashboard.toggleSidebar()"></div>
+
+  <!-- Main Content -->
+  <main class="main" id="main">
+
+    <!-- PAGE: Ringkasan -->
+    <section class="page active" id="page-ringkasan">
+      <div class="page-header">
+        <h1 class="page-title">📊 Ringkasan</h1>
+        <p class="page-subtitle">Overview pelaporan jentik DBD Kota Bandung</p>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <!-- Charts Row -->
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>📈 Tren Pelaporan (30 Hari)</h3>
+          </div>
+          <div class="chart-card-body">
+            <canvas id="chartTren"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>🥧 Status Jentik</h3>
+          </div>
+          <div class="chart-card-body chart-body-pie">
+            <canvas id="chartStatus"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row -->
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>🏠 Jenis Tempat Penampungan</h3>
+          </div>
+          <div class="chart-card-body">
+            <canvas id="chartTempat"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>🏅 Top Kader</h3>
+          </div>
+          <div class="chart-card-body" id="topKaderList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: Laporan -->
+    <section class="page" id="page-laporan">
+      <div class="page-header">
+        <h1 class="page-title">📋 Daftar Laporan</h1>
+        <p class="page-subtitle">Semua laporan jentik dari kader kesehatan</p>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar" id="filterBar">
+        <div class="filter-group">
+          <label class="filter-label">Tanggal</label>
+          <input type="date" class="filter-input" id="filterTanggal">
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">RW</label>
+          <select class="filter-input" id="filterRW">
+            <option value="">Semua RW</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Status</label>
+          <select class="filter-input" id="filterStatus">
+            <option value="">Semua</option>
+            <option value="ditemukan">🦟 Ditemukan</option>
+            <option value="tidak">✅ Tidak Ditemukan</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Jenis Tempat</label>
+          <select class="filter-input" id="filterTempat">
+            <option value="">Semua</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Cari</label>
+          <input type="text" class="filter-input" id="filterCari" placeholder="Cari lokasi/kader...">
+        </div>
+        <button class="filter-btn" onclick="Dashboard.resetFilters()">↺ Reset</button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div class="table-card-header">
+          <span id="tableCount">0 laporan ditemukan</span>
+          <button class="filter-btn" onclick="Dashboard.exportCSV()">📥 Export CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="th-id">#</th>
+                <th class="th-sort" onclick="Dashboard.sortTable('tanggal')">Tanggal ↕</th>
+                <th class="th-sort" onclick="Dashboard.sortTable('kader')">Kader ↕</th>
+                <th class="th-sort" onclick="Dashboard.sortTable('rw')">RW ↕</th>
+                <th>Lokasi</th>
+                <th>Jenis Tempat</th>
+                <th class="th-sort" onclick="Dashboard.sortTable('status')">Status ↕</th>
+                <th>Foto</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="table-pagination" id="tablePagination"></div>
+      </div>
+    </section>
+
+    <!-- PAGE: Peta Hotspot -->
+    <section class="page" id="page-peta">
+      <div class="page-header">
+        <h1 class="page-title">🗺️ Peta Hotspot</h1>
+        <p class="page-subtitle">Sebaran laporan jentik per wilayah RW</p>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card chart-card-wide">
+          <div class="chart-card-header">
+            <h3>📊 Jumlah Laporan per RW</h3>
+          </div>
+          <div class="chart-card-body">
+            <canvas id="chartRW"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="hotspot-grid" id="hotspotGrid"></div>
+
+      <div class="chart-row" style="margin-top:16px;">
+        <div class="chart-card chart-card-wide">
+          <div class="chart-card-header">
+            <h3>🔥 Proporsi Jentik Ditemukan per RW</h3>
+          </div>
+          <div class="chart-card-body">
+            <canvas id="chartHotspot"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: Performa Kader -->
+    <section class="page" id="page-kader">
+      <div class="page-header">
+        <h1 class="page-title">👥 Performa Kader</h1>
+        <p class="page-subtitle">Ranking dan kontribusi kader kesehatan</p>
+      </div>
+
+      <div class="kpi-grid" id="kaderKpi"></div>
+
+      <div class="chart-row">
+        <div class="chart-card chart-card-wide">
+          <div class="chart-card-header">
+            <h3>📊 Distribusi Level Kader</h3>
+          </div>
+          <div class="chart-card-body chart-body-bar">
+            <canvas id="chartKaderLevel"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card" style="margin-top:16px;">
+        <div class="table-card-header">
+          <span>Ranking Kader</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="th-id">#</th>
+                <th>Kader</th>
+                <th>RW</th>
+                <th>Level</th>
+                <th class="th-sort" onclick="Dashboard.sortKader('totalLaporan')">Total Laporan ↕</th>
+                <th class="th-sort" onclick="Dashboard.sortKader('laporanDitemukan')">Ditemukan ↕</th>
+                <th class="th-sort" onclick="Dashboard.sortKader('poin')">Poin ↕</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="kaderTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="data.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
