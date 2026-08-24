@@ -157,12 +157,20 @@ const Dashboard = {
     if (target) target.classList.add("active");
     if (navBtn) navBtn.classList.add("active");
 
-    // Initialize map when visiting peta page
-    if (page === "peta" && !this._mapInitialized) {
-      setTimeout(() => {
-        this.initMap();
-        this._mapInitialized = true;
-      }, 100);
+    // Initialize or refresh map when visiting peta page
+    if (page === "peta") {
+      if (!this._mapInitialized) {
+        setTimeout(() => {
+          this.initMap();
+          this._mapInitialized = true;
+        }, 300);
+      } else if (this.map) {
+        // Map already exists but container was hidden — refresh size
+        setTimeout(() => {
+          this.map.invalidateSize();
+          this.renderMapMarkers(this.MOCK_LAPORAN);
+        }, 150);
+      }
     }
 
     // Close sidebar on mobile
@@ -594,20 +602,29 @@ const Dashboard = {
     this.renderMapMarkers(this.MOCK_LAPORAN);
     this.renderKecamatanCards();
 
-    // Fix map size after render
-    setTimeout(() => this.map.invalidateSize(), 200);
+    // Fix map size after render — multiple attempts for reliability
+    setTimeout(() => this.map.invalidateSize(), 300);
+    setTimeout(() => this.map.invalidateSize(), 800);
   },
 
   renderMapMarkers(data) {
-    // Clear existing markers
+    // Clear existing layers safely
     if (this.map) {
-      this.map.eachLayer((layer) => {
-        if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
-          this.map.removeLayer(layer);
-        }
-      });
-      this.map.removeLayer(this.mapClusterGroup);
+      // Remove cluster group if it exists on map
+      if (this.mapClusterGroup && this.map.hasLayer(this.mapClusterGroup)) {
+        this.map.removeLayer(this.mapClusterGroup);
+      }
       this.mapClusterGroup.clearLayers();
+
+      // Remove individual markers
+      this.mapMarkers.forEach((m) => {
+        if (this.map.hasLayer(m)) this.map.removeLayer(m);
+      });
+
+      // Remove heat layer
+      if (this.mapHeatLayer && this.map.hasLayer(this.mapHeatLayer)) {
+        this.map.removeLayer(this.mapHeatLayer);
+      }
     }
 
     this.mapMarkers = [];
@@ -676,20 +693,16 @@ const Dashboard = {
   },
 
   changeMapType() {
+    if (!this.map) return;
     const type = document.getElementById("filterMapType").value;
 
-    // Remove all layers first
-    this.map.eachLayer((layer) => {
-      if (layer instanceof L.TileLayer) return; // Keep tile layer
-      if (layer === this.mapHeatLayer) {
-        this.map.removeLayer(this.mapHeatLayer);
-      }
-      if (layer === this.mapClusterGroup) {
-        this.map.removeLayer(this.mapClusterGroup);
-      }
-    });
-
-    // Remove individual markers
+    // Safely remove non-tile layers
+    if (this.mapHeatLayer && this.map.hasLayer(this.mapHeatLayer)) {
+      this.map.removeLayer(this.mapHeatLayer);
+    }
+    if (this.mapClusterGroup && this.map.hasLayer(this.mapClusterGroup)) {
+      this.map.removeLayer(this.mapClusterGroup);
+    }
     this.mapMarkers.forEach((m) => {
       if (this.map.hasLayer(m)) this.map.removeLayer(m);
     });
