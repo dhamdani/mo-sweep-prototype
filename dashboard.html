@@ -6,6 +6,9 @@
   <meta name="theme-color" content="#0F172A">
   <title>Mo-Sweep Dashboard — Dinas Kesehatan Kota Bandung</title>
   <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -175,27 +178,64 @@
     <!-- PAGE: Peta Hotspot -->
     <section class="page" id="page-peta">
       <div class="page-header">
-        <h1 class="page-title">🗺️ Peta Hotspot</h1>
-        <p class="page-subtitle">Sebaran laporan jentik per wilayah RW</p>
+        <h1 class="page-title">🗺️ Peta Sebaran Jentik</h1>
+        <p class="page-subtitle">Peta interaktif laporan jentik DBD di Kota Bandung</p>
       </div>
 
-      <div class="chart-row">
-        <div class="chart-card chart-card-wide">
+      <!-- Map Controls -->
+      <div class="map-controls">
+        <div class="filter-group">
+          <label class="filter-label">Kecamatan</label>
+          <select class="filter-input" id="filterKecamatan" onchange="Dashboard.filterMap()">
+            <option value="">Semua Kecamatan</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Status</label>
+          <select class="filter-input" id="filterMapStatus" onchange="Dashboard.filterMap()">
+            <option value="">Semua</option>
+            <option value="ditemukan">🦟 Ditemukan</option>
+            <option value="tidak">✅ Tidak Ditemukan</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Tampilan</label>
+          <select class="filter-input" id="filterMapType" onchange="Dashboard.changeMapType()">
+            <option value="markers">📍 Titik Laporan</option>
+            <option value="heatmap">🔥 Heatmap</option>
+            <option value="cluster">📦 Cluster</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <div class="map-container">
+        <div id="petaBandung" class="leaflet-map"></div>
+        <div class="map-legend">
+          <div class="map-legend-title">Legenda</div>
+          <div class="map-legend-item"><span class="legend-dot" style="background:#EF4444;"></span> Jentik Ditemukan</div>
+          <div class="map-legend-item"><span class="legend-dot" style="background:#22C55E;"></span> Tidak Ditemukan</div>
+          <div class="map-legend-item"><span class="legend-dot" style="background:#F97316;opacity:0.5;"></span> Hotspot (≥50% temuan)</div>
+        </div>
+      </div>
+
+      <!-- Kecamatan Summary -->
+      <div class="section-label" style="margin-top:20px;margin-bottom:12px;font-size:15px;font-weight:700;">📊 Ringkasan per Kecamatan</div>
+      <div class="hotspot-grid" id="kecamatanGrid"></div>
+
+      <!-- Charts below map -->
+      <div class="chart-row" style="margin-top:16px;">
+        <div class="chart-card">
           <div class="chart-card-header">
-            <h3>📊 Jumlah Laporan per RW</h3>
+            <h3>📊 Jumlah Laporan per Kecamatan</h3>
           </div>
           <div class="chart-card-body">
             <canvas id="chartRW"></canvas>
           </div>
         </div>
-      </div>
-
-      <div class="hotspot-grid" id="hotspotGrid"></div>
-
-      <div class="chart-row" style="margin-top:16px;">
-        <div class="chart-card chart-card-wide">
+        <div class="chart-card">
           <div class="chart-card-header">
-            <h3>🔥 Proporsi Jentik Ditemukan per RW</h3>
+            <h3>🔥 Proporsi Jentik per Kecamatan</h3>
           </div>
           <div class="chart-card-body">
             <canvas id="chartHotspot"></canvas>
@@ -251,6 +291,9 @@
   </main>
 
   <script src="data.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>

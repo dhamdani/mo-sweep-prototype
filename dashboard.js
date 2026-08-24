@@ -13,6 +13,50 @@ const Dashboard = {
   perPage: 10,
   filteredData: [],
   charts: {},
+  map: null,
+  mapMarkers: [],
+  mapHeatLayer: null,
+  mapClusterGroup: null,
+
+  // ========================
+  // KECAMATAN DATA — Koordinat Kota Bandung
+  // ========================
+  KECAMATAN: [
+    { id: "bandung_wetan",    nama: "Bandung Wetan",    lat: -6.8917, lng: 107.6547 },
+    { id: "coblong",          nama: "Coblong",          lat: -6.8850, lng: 107.6140 },
+    { id: "cibeunying_kidul", nama: "Cibeunying Kidul", lat: -6.8830, lng: 107.6520 },
+    { id: "cibeunying_kaler", nama: "Cibeunying Kaler", lat: -6.8750, lng: 107.6350 },
+    { id: "sumur_bandung",    nama: "Sumur Bandung",    lat: -6.9100, lng: 107.6080 },
+    { id: "batununggal",      nama: "Batununggal",      lat: -6.9200, lng: 107.6150 },
+    { id: "kiaracondong",     nama: "Kiaracondong",     lat: -6.9350, lng: 107.6450 },
+    { id: "buahbatu",         nama: "Buah Batu",        lat: -6.9450, lng: 107.6500 },
+    { id: "rancaekek",        nama: "Rancaekek",        lat: -6.9700, lng: 107.6900 },
+    { id: "cinunuk",          nama: "Cinunuk",          lat: -6.9350, lng: 107.7000 },
+    { id: "cileunyi",         nama: "Cileunyi",         lat: -6.9350, lng: 107.7400 },
+    { id: "mandalajati",      nama: "Mandalajati",      lat: -6.8700, lng: 107.6600 },
+    { id: "rancasari",        nama: "Rancasari",        lat: -6.9550, lng: 107.6700 },
+    { id: "regol",            nama: "Regol",            lat: -6.9250, lng: 107.5950 },
+    { id: "arcamanik",        nama: "Arcamanik",        lat: -6.9350, lng: 107.6750 },
+    { id: "sukasari",         nama: "Sukasari",         lat: -6.8650, lng: 107.6100 },
+    { id: "cisarua",          nama: "Cisarua",          lat: -6.8750, lng: 107.5850 },
+    { id: "condongcatur",     nama: "Condongcatur",     lat: -6.9050, lng: 107.5850 },
+    { id: "acamata",          nama: "Campaka",          lat: -6.9100, lng: 107.5700 },
+    { id: "pahlawan",         nama: "Pahlawan",         lat: -6.9200, lng: 107.5800 },
+  ],
+
+  // Kader kecamatan mapping (simulasi kader bertugas di kecamatan tertentu)
+  KADER_KECAMATAN: [
+    { nama: "Rina Wulandari",   kecamatan: "bandung_wetan",    lat: -6.8917, lng: 107.6547 },
+    { nama: "Asep Sunarya",     kecamatan: "coblong",          lat: -6.8850, lng: 107.6140 },
+    { nama: "Siti Nurhaliza",   kecamatan: "cibeunying_kidul", lat: -6.8830, lng: 107.6520 },
+    { nama: "Dedi Kuswanto",    kecamatan: "batununggal",      lat: -6.9200, lng: 107.6150 },
+    { nama: "Yanti Sumarni",    kecamatan: "buahbatu",         lat: -6.9450, lng: 107.6500 },
+    { nama: "Rudi Hartono",     kecamatan: "kiaracondong",     lat: -6.9350, lng: 107.6450 },
+    { nama: "Wati Susilawati",  kecamatan: "cibeunying_kaler", lat: -6.8750, lng: 107.6350 },
+    { nama: "Indra Gunawan",    kecamatan: "sumur_bandung",    lat: -6.9100, lng: 107.6080 },
+    { nama: "Maya Anggraeni",   kecamatan: "rancasari",        lat: -6.9550, lng: 107.6700 },
+    { nama: "Hendra Wijaya",    kecamatan: "cinunuk",          lat: -6.9350, lng: 107.7000 },
+  ],
 
   // ========================
   // MOCK DATA — Simulated reports from all kader
@@ -21,16 +65,16 @@ const Dashboard = {
 
   initMockData() {
     const kaderNames = [
-      { nama: "Rina Wulandari", rw: "RW 03", avatar: "👩" },
-      { nama: "Asep Sunarya", rw: "RW 01", avatar: "👨" },
-      { nama: "Siti Nurhaliza", rw: "RW 05", avatar: "👩" },
-      { nama: "Dedi Kuswanto", rw: "RW 02", avatar: "👨" },
-      { nama: "Yanti Sumarni", rw: "RW 04", avatar: "👩" },
-      { nama: "Rudi Hartono", rw: "RW 06", avatar: "👨" },
-      { nama: "Wati Susilawati", rw: "RW 07", avatar: "👩" },
-      { nama: "Indra Gunawan", rw: "RW 08", avatar: "👨" },
-      { nama: "Maya Anggraeni", rw: "RW 09", avatar: "👩" },
-      { nama: "Hendra Wijaya", rw: "RW 10", avatar: "👨" },
+      { nama: "Rina Wulandari",   rw: "RW 03", avatar: "👩" },
+      { nama: "Asep Sunarya",     rw: "RW 01", avatar: "👨" },
+      { nama: "Siti Nurhaliza",   rw: "RW 05", avatar: "👩" },
+      { nama: "Dedi Kuswanto",    rw: "RW 02", avatar: "👨" },
+      { nama: "Yanti Sumarni",    rw: "RW 04", avatar: "👩" },
+      { nama: "Rudi Hartono",     rw: "RW 06", avatar: "👨" },
+      { nama: "Wati Susilawati",  rw: "RW 07", avatar: "👩" },
+      { nama: "Indra Gunawan",    rw: "RW 08", avatar: "👨" },
+      { nama: "Maya Anggraeni",   rw: "RW 09", avatar: "👩" },
+      { nama: "Hendra Wijaya",    rw: "RW 10", avatar: "👨" },
     ];
 
     const jalan = [
@@ -55,18 +99,28 @@ const Dashboard = {
       // 3-7 reports per day
       const count = 3 + Math.floor(Math.random() * 5);
       for (let j = 0; j < count; j++) {
-        const kader = kaderNames[Math.floor(Math.random() * kaderNames.length)];
+        const kaderIdx = Math.floor(Math.random() * kaderNames.length);
+        const kader = kaderNames[kaderIdx];
+        const kaderKecamatan = this.KADER_KECAMATAN[kaderIdx];
         const status = statusList[Math.random() < 0.4 ? 0 : 1]; // 40% found
+
+        // Generate coordinates near kader's kecamatan with some randomness
+        const lat = kaderKecamatan.lat + (Math.random() - 0.5) * 0.02;
+        const lng = kaderKecamatan.lng + (Math.random() - 0.5) * 0.02;
+
         laporan.push({
           id: id++,
           tanggal,
           kader: kader.nama,
           avatar: kader.avatar,
           rw: kader.rw,
+          kecamatan: kaderKecamatan.kecamatan,
           lokasi: jalan[Math.floor(Math.random() * jalan.length)] + " No. " + (Math.floor(Math.random() * 100) + 1),
           tempat: tempat[Math.floor(Math.random() * tempat.length)],
           status,
           foto: Math.random() < 0.5,
+          lat,
+          lng,
         });
       }
     }
@@ -79,6 +133,7 @@ const Dashboard = {
   init() {
     this.initMockData();
     this.populateFilters();
+    this.populateKecamatanFilter();
     this.filteredData = [...this.MOCK_LAPORAN];
     this.renderKPI();
     this.renderChartsRingkasan();
@@ -86,6 +141,8 @@ const Dashboard = {
     this.renderTable();
     this.renderHotspot();
     this.renderKader();
+    // Init map lazily when peta page is first visited
+    this._mapInitialized = false;
   },
 
   // ========================
@@ -99,6 +156,14 @@ const Dashboard = {
     const navBtn = document.querySelector(`.sidebar-nav-item[data-page="${page}"]`);
     if (target) target.classList.add("active");
     if (navBtn) navBtn.classList.add("active");
+
+    // Initialize map when visiting peta page
+    if (page === "peta" && !this._mapInitialized) {
+      setTimeout(() => {
+        this.initMap();
+        this._mapInitialized = true;
+      }, 100);
+    }
 
     // Close sidebar on mobile
     document.getElementById("sidebar").classList.remove("open");
@@ -487,28 +552,196 @@ const Dashboard = {
   },
 
   // ========================
-  // HOTSPOT
+  // POPULATE KECAMATAN FILTER
   // ========================
-  renderHotspot() {
-    const rwMap = {};
-    this.MOCK_LAPORAN.forEach((l) => {
-      if (!rwMap[l.rw]) rwMap[l.rw] = { total: 0, ditemukan: 0 };
-      rwMap[l.rw].total++;
-      if (l.status === "ditemukan") rwMap[l.rw].ditemukan++;
+  populateKecamatanFilter() {
+    const select = document.getElementById("filterKecamatan");
+    this.KECAMATAN.forEach((k) => {
+      const o = document.createElement("option");
+      o.value = k.id;
+      o.textContent = k.nama;
+      select.appendChild(o);
+    });
+  },
+
+  // ========================
+  // MAP
+  // ========================
+  initMap() {
+    if (this.map) return;
+
+    // Center on Kota Bandung
+    this.map = L.map("petaBandung", {
+      zoomControl: true,
+      scrollWheelZoom: true,
+    }).setView([-6.9175, 107.6191], 13);
+
+    // Tile layer — OpenStreetMap
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 18,
+    }).addTo(this.map);
+
+    // Initialize cluster group
+    this.mapClusterGroup = L.markerClusterGroup({
+      maxClusterRadius: 50,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
     });
 
-    const sorted = Object.entries(rwMap).sort((a, b) => b[1].ditemukan - a[1].ditemukan);
-    const maxTotal = Math.max(...sorted.map(([, v]) => v.total), 1);
+    // Add all markers
+    this.renderMapMarkers(this.MOCK_LAPORAN);
+    this.renderKecamatanCards();
 
-    // Cards
-    const grid = document.getElementById("hotspotGrid");
-    grid.innerHTML = sorted.map(([rw, v]) => {
-      const pct = (v.ditemukan / v.total * 100).toFixed(0);
+    // Fix map size after render
+    setTimeout(() => this.map.invalidateSize(), 200);
+  },
+
+  renderMapMarkers(data) {
+    // Clear existing markers
+    if (this.map) {
+      this.map.eachLayer((layer) => {
+        if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
+          this.map.removeLayer(layer);
+        }
+      });
+      this.map.removeLayer(this.mapClusterGroup);
+      this.mapClusterGroup.clearLayers();
+    }
+
+    this.mapMarkers = [];
+    const heatData = [];
+
+    data.forEach((l) => {
+      if (!l.lat || !l.lng) return;
+
+      // Create circle marker
+      const color = l.status === "ditemukan" ? "#EF4444" : "#22C55E";
+      const radius = l.status === "ditemukan" ? 7 : 5;
+
+      const marker = L.circleMarker([l.lat, l.lng], {
+        radius: radius,
+        fillColor: color,
+        color: "#fff",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.85,
+      });
+
+      // Popup content
+      const tempat = JENIS_TEMPAT.find((j) => j.id === l.tempat);
+      const kecamatan = this.KECAMATAN.find((k) => k.id === l.kecamatan);
+      marker.bindPopup(`
+        <div class="popup-title">${l.avatar} ${l.kader}</div>
+        <div class="popup-info">
+          <div>📍 ${l.lokasi}</div>
+          <div>🏘️ ${kecamatan ? kecamatan.nama : l.kecamatan} • ${l.rw}</div>
+          <div>🏠 ${tempat ? tempat.icon + " " + tempat.nama : l.tempat}</div>
+          <div>📅 ${this.formatDate(l.tanggal)}</div>
+          <div><span class="popup-status ${l.status}">${l.status === "ditemukan" ? "🦟 Jentik Ditemukan" : "✅ Tidak Ditemukan"}</span></div>
+          ${l.foto ? '<div style="margin-top:4px;font-size:11px;">📷 Ada foto dokumentasi</div>' : ""}
+        </div>
+      `, { maxWidth: 250 });
+
+      this.mapMarkers.push(marker);
+      this.mapClusterGroup.addLayer(marker);
+
+      // Heatmap data
+      const intensity = l.status === "ditemukan" ? 1.0 : 0.3;
+      heatData.push([l.lat, l.lng, intensity]);
+    });
+
+    // Add cluster group to map
+    this.map.addLayer(this.mapClusterGroup);
+
+    // Create heat layer
+    if (this.mapHeatLayer) this.map.removeLayer(this.mapHeatLayer);
+    this.mapHeatLayer = L.heatLayer(heatData, {
+      radius: 25,
+      blur: 15,
+      maxZoom: 15,
+      max: 1.0,
+      gradient: {
+        0.2: "#22C55E",
+        0.4: "#84CC16",
+        0.6: "#EAB308",
+        0.8: "#F97316",
+        1.0: "#EF4444",
+      },
+    });
+
+    // Show default view
+    this.changeMapType();
+  },
+
+  changeMapType() {
+    const type = document.getElementById("filterMapType").value;
+
+    // Remove all layers first
+    this.map.eachLayer((layer) => {
+      if (layer instanceof L.TileLayer) return; // Keep tile layer
+      if (layer === this.mapHeatLayer) {
+        this.map.removeLayer(this.mapHeatLayer);
+      }
+      if (layer === this.mapClusterGroup) {
+        this.map.removeLayer(this.mapClusterGroup);
+      }
+    });
+
+    // Remove individual markers
+    this.mapMarkers.forEach((m) => {
+      if (this.map.hasLayer(m)) this.map.removeLayer(m);
+    });
+
+    if (type === "markers") {
+      this.mapMarkers.forEach((m) => m.addTo(this.map));
+    } else if (type === "heatmap") {
+      this.mapHeatLayer.addTo(this.map);
+    } else if (type === "cluster") {
+      this.map.addLayer(this.mapClusterGroup);
+    }
+  },
+
+  filterMap() {
+    const kecamatan = document.getElementById("filterKecamatan").value;
+    const status = document.getElementById("filterMapStatus").value;
+
+    let filtered = this.MOCK_LAPORAN;
+    if (kecamatan) filtered = filtered.filter((l) => l.kecamatan === kecamatan);
+    if (status) filtered = filtered.filter((l) => l.status === status);
+
+    this.renderMapMarkers(filtered);
+    this.renderKecamatanCards(filtered);
+
+    // Fit map to filtered bounds
+    if (filtered.length > 0 && this.map) {
+      const bounds = L.latLngBounds(filtered.map((l) => [l.lat, l.lng]));
+      this.map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  },
+
+  renderKecamatanCards(data = null) {
+    const source = data || this.MOCK_LAPORAN;
+    const kecMap = {};
+    source.forEach((l) => {
+      if (!kecMap[l.kecamatan]) kecMap[l.kecamatan] = { total: 0, ditemukan: 0 };
+      kecMap[l.kecamatan].total++;
+      if (l.status === "ditemukan") kecMap[l.kecamatan].ditemukan++;
+    });
+
+    const sorted = Object.entries(kecMap).sort((a, b) => b[1].ditemukan - a[1].ditemukan);
+    const maxDitemukan = Math.max(...sorted.map(([, v]) => v.ditemukan), 1);
+
+    const grid = document.getElementById("kecamatanGrid");
+    grid.innerHTML = sorted.map(([kecId, v]) => {
+      const kec = this.KECAMATAN.find((k) => k.id === kecId);
+      const pct = v.total > 0 ? ((v.ditemukan / v.total) * 100).toFixed(0) : 0;
       const severity = pct >= 50 ? "high" : pct >= 30 ? "medium" : "low";
       const barColor = severity === "high" ? "var(--danger)" : severity === "medium" ? "var(--accent)" : "var(--success)";
       return `
-        <div class="hotspot-card">
-          <div class="hotspot-card-rw">${rw}</div>
+        <div class="hotspot-card" onclick="Dashboard.zoomToKecamatan('${kecId}')" style="cursor:pointer;">
+          <div class="hotspot-card-rw">${kec ? kec.nama : kecId}</div>
           <div class="hotspot-card-total ${severity}">${v.ditemukan}</div>
           <div class="hotspot-card-label">ditemukan dari ${v.total} laporan (${pct}%)</div>
           <div class="hotspot-card-bar">
@@ -517,6 +750,27 @@ const Dashboard = {
         </div>
       `;
     }).join("");
+  },
+
+  zoomToKecamatan(kecId) {
+    const kec = this.KECAMATAN.find((k) => k.id === kecId);
+    if (kec && this.map) {
+      this.map.setView([kec.lat, kec.lng], 15, { animate: true });
+    }
+  },
+
+  renderHotspot() {
+    // Use kecamatan data for charts
+    const kecMap = {};
+    this.MOCK_LAPORAN.forEach((l) => {
+      if (!kecMap[l.kecamatan]) kecMap[l.kecamatan] = { total: 0, ditemukan: 0 };
+      kecMap[l.kecamatan].total++;
+      if (l.status === "ditemukan") kecMap[l.kecamatan].ditemukan++;
+    });
+
+    const sorted = Object.entries(kecMap)
+      .sort((a, b) => b[1].ditemukan - a[1].ditemukan)
+      .slice(0, 10); // Top 10 kecamatan
 
     // Charts
     this.renderChartRW(sorted);
@@ -524,7 +778,10 @@ const Dashboard = {
   },
 
   renderChartRW(sorted) {
-    const labels = sorted.map(([rw]) => rw);
+    const labels = sorted.map(([kecId]) => {
+      const kec = this.KECAMATAN.find((k) => k.id === kecId);
+      return kec ? kec.nama : kecId;
+    });
     const ctx = document.getElementById("chartRW").getContext("2d");
     if (this.charts.rw) this.charts.rw.destroy();
     this.charts.rw = new Chart(ctx, {
@@ -550,7 +807,10 @@ const Dashboard = {
   },
 
   renderChartHotspot(sorted) {
-    const labels = sorted.map(([rw]) => rw);
+    const labels = sorted.map(([kecId]) => {
+      const kec = this.KECAMATAN.find((k) => k.id === kecId);
+      return kec ? kec.nama : kecId;
+    });
     const pctData = sorted.map(([, v]) => v.total > 0 ? ((v.ditemukan / v.total) * 100).toFixed(1) : 0);
     const ctx = document.getElementById("chartHotspot").getContext("2d");
     if (this.charts.hotspot) this.charts.hotspot.destroy();
